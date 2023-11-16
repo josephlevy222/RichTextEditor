@@ -20,14 +20,14 @@ public struct RichTextEditor: View {
         placeholder: String = "Type ...",
         onCommit: @escaping ((NSAttributedString) -> Void) = { _ in}
     ) {
-        var attributedString = attributedText.wrappedValue
-        var update = false
-        for run in attributedString.runs {
-            if run.font == nil {
-                attributedString[run.range].font = .body
-                update = true
-            }
-        }
+//        var attributedString = attributedText.wrappedValue
+//        var update = false
+//        for run in attributedString.runs {
+//            if run.font == nil {
+//                attributedString[run.range].font = .body
+//                update = true
+//            }
+//        }
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
@@ -87,7 +87,8 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         placeholder: String,
         onCommit: @escaping ((NSAttributedString) -> Void)
     ) {
-        _attributedText = attributedText
+        _attributedText = Binding(get: {attributedText.wrappedValue},
+                                  set: {value in attributedText.wrappedValue = value.nsAttributedString.uiFontAttributedString})
         _undoManager = undoManager
         self._size = size
         self.controller = UIViewController()
