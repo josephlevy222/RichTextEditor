@@ -333,26 +333,29 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                         // pointSize is the fontSize that the toolbar ought to use unless justChanged
                         return (font.contains(trait: .traitBold),font.contains(trait: .traitItalic), pointSize, offset)
                     }
-                    print("Non UIFont in fontTraits")
                     pointSize = UIFont.preferredFont(forTextStyle: .body).pointSize
-                    // Fix font
-                    let mutableString = NSMutableAttributedString(attributedString: textView.attributedText)
+                    print("Non UIFont in fontTraits default is \(pointSize)")
                     
-                    var font: UIFont
-                    let defaultFont = UIFont.preferredFont(forTextStyle: .body)
-                    let selection = textView.selectedRange
-                    textView.selectedRange = NSRange(location: 0,length: textView.attributedText.length)
-                    let rangesAttributes = selectedRangeAttributes
-                    for (range, attributes) in rangesAttributes {
-                        font = attributes[.font] as? UIFont ?? defaultFont
-                        let weight = font.fontDescriptor.symbolicTraits.intersection(.traitBold) == .traitBold ? .bold : font.fontDescriptor.weight
-                        let size = font.fontDescriptor.pointSize
-                        font = UIFont(descriptor: font.fontDescriptor, size: size).withWeight(weight)
-                        mutableString.removeAttribute(.font, range: range)
-                        mutableString.addAttributes([.font : font], range: range)
+                    // Fix font
+                    DispatchQueue.main.async {
+                        let mutableString = NSMutableAttributedString(attributedString: textView.attributedText)
+                        
+                        var font: UIFont
+                        let defaultFont = UIFont.preferredFont(forTextStyle: .body)
+                        let selection = textView.selectedRange
+                        textView.selectedRange = NSRange(location: 0,length: textView.attributedText.length)
+                        let rangesAttributes = self.selectedRangeAttributes
+                        for (range, attributes) in rangesAttributes {
+                            font = attributes[.font] as? UIFont ?? defaultFont
+                            let weight = font.fontDescriptor.symbolicTraits.intersection(.traitBold) == .traitBold ? .bold : font.fontDescriptor.weight
+                            let size = font.fontDescriptor.pointSize
+                            font = UIFont(descriptor: font.fontDescriptor, size: size).withWeight(weight)
+                            mutableString.removeAttribute(.font, range: range)
+                            mutableString.addAttributes([.font : font], range: range)
+                        }
+                        (textView as? MyTextView)?.updateAttributedText(with: mutableString)
+                        textView.selectedRange = selection
                     }
-                    (textView as? MyTextView)?.updateAttributedText(with: mutableString)
-                    textView.selectedRange = selection
                 }
                 return ( false, false, pointSize, offset)
             }()
