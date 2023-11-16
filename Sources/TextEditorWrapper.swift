@@ -20,9 +20,16 @@ public struct RichTextEditor: View {
         placeholder: String = "Type ...",
         onCommit: @escaping ((NSAttributedString) -> Void) = { _ in}
     ) {
+        var attributedString = attributedText.wrappedValue
+        for run in attributedString.runs {
+            if run.font == nil {
+                attributedString[run.range].font = .body
+            }
+        }
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
+        DispatchQueue.main.async { attributedText.wrappedValue = attributedString }
     }
     
     public var body: some View {
