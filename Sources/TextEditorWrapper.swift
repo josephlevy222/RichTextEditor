@@ -31,9 +31,9 @@ public struct RichTextEditor: View {
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
-        if update {
-            DispatchQueue.main.async { attributedText.wrappedValue = attributedString }
-        }
+//        if update {
+//            DispatchQueue.main.async { attributedText.wrappedValue = attributedString }
+//        }
     }
     
     public var body: some View {
