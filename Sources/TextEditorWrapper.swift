@@ -23,7 +23,6 @@ public struct RichTextEditor: View {
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
-        attributedText.wrappedValue = attributedText.wrappedValue.nsAttributedString.uiFontAttributedString
     }
     
     public var body: some View {
