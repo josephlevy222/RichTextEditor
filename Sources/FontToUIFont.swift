@@ -55,6 +55,7 @@ extension AttributedString {
             // Handle font  /// A property for accessing a font attribute.
             if let font = run.font { // SwiftUI Font exists
                 if let uiFont = resolveFont(font)?.font(with: traitCollection) {
+                    nsAttributes[.font] = nil
                     nsAttributes[.font] = uiFont // add font
                 }  else { // Already UIFont or default
                     print("font not resolved",font)
