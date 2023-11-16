@@ -21,15 +21,19 @@ public struct RichTextEditor: View {
         onCommit: @escaping ((NSAttributedString) -> Void) = { _ in}
     ) {
         var attributedString = attributedText.wrappedValue
+        var update = false
         for run in attributedString.runs {
             if run.font == nil {
                 attributedString[run.range].font = .body
+                update = true
             }
         }
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
-        DispatchQueue.main.async { attributedText.wrappedValue = attributedString }
+        if update {
+            DispatchQueue.main.async { attributedText.wrappedValue = attributedString }
+        }
     }
     
     public var body: some View {
