@@ -77,6 +77,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
     private let onCommit: ((NSAttributedString) -> Void)
     
     private var defaultFont: UIFont {
+        print("defaultSize: \(defaultFontSize)")
         return UIFont(name: defaultFontName, size: defaultFontSize) ?? .systemFont(ofSize: defaultFontSize)
     }
     

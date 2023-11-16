@@ -17,7 +17,7 @@ struct KeyBoardToolBar  {
     var isSuperscript: Bool = false
     var isSubscript: Bool = false
     var fontSize: CGFloat = 17
-    var textAlignment: NSTextAlignment = .left
+    var textAlignment: NSTextAlignment = .center
     var color : Color = Color(uiColor: .label)
     var background: Color = Color(uiColor: .systemBackground)
     
