@@ -336,8 +336,16 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                     print("Non UIFont in fontTraits")
                     pointSize = UIFont.preferredFont(forTextStyle: .body).pointSize
                     // Fix font
-                    var attributedString = NSMutableAttributedString(attributedString: textView.attributedText).uiFontAttributedString.nsAttributedString
-                    textView.attributedText = attributedString
+                    var font: UIFont
+                    let defaultFont = UIFont.preferredFont(forTextStyle: .body)
+                    let rangesAttributes = selectedRangeAttributes
+                    for (range, attributes) in rangesAttributes {
+                        font = attributes[.font] as? UIFont ?? defaultFont
+                        let weight = font.fontDescriptor.symbolicTraits.intersection(.traitBold) == .traitBold ? .bold : font.fontDescriptor.weight
+                        let size = font.fontDescriptor.pointSize
+                        font = UIFont(descriptor: font.fontDescriptor, size: size).withWeight(weight)
+                        textEffect(range: range, key: .font, value: font, defaultValue: defaultFont)
+                    }
                 }
                 return ( false, false, pointSize, offset)
             }()
