@@ -40,6 +40,9 @@ public struct RichTextEditor: View {
         TextEditorWrapper(attributedText: $attributedText,undoManager: $undoManager, size: $dynamicSize, placeholder: placeholder, onCommit: onCommit)
             .frame(minHeight: dynamicSize.height ,
                    maxHeight: dynamicSize.height)
+            .onAppear {
+                attributedText = attributedText.nsAttributedString.uiFontAttributedString
+            }
     }
 }
 
@@ -87,8 +90,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         placeholder: String,
         onCommit: @escaping ((NSAttributedString) -> Void)
     ) {
-        _attributedText = Binding(get: {attributedText.wrappedValue.nsAttributedString.uiFontAttributedString},
-                                  set: {value in attributedText.wrappedValue = value.nsAttributedString.uiFontAttributedString})
+        _attributedText = attributedText
         _undoManager = undoManager
         self._size = size
         self.controller = UIViewController()
