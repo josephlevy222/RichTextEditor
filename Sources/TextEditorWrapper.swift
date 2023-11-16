@@ -87,7 +87,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         placeholder: String,
         onCommit: @escaping ((NSAttributedString) -> Void)
     ) {
-        _attributedText = Binding(get: {attributedText.wrappedValue},
+        _attributedText = Binding(get: {attributedText.wrappedValue.nsAttributedString.uiFontAttributedString},
                                   set: {value in attributedText.wrappedValue = value.nsAttributedString.uiFontAttributedString})
         _undoManager = undoManager
         self._size = size
