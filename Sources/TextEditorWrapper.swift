@@ -72,12 +72,12 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
     private let placeholder: String
     private let lineSpacing: CGFloat = 3
     private let hintColor = UIColor.placeholderText
+    /// The following two lines need to be changed to allow dynamic font size
     private let defaultFontSize = UIFont.systemFontSize
     private let defaultFontName = UIFont.systemFont(ofSize: 17).fontDescriptor.fontAttributes[.name] as? String ?? "SFUI"
     private let onCommit: ((NSAttributedString) -> Void)
     
     private var defaultFont: UIFont {
-        print("defaultSize: \(defaultFontSize)")
         return UIFont(name: defaultFontName, size: defaultFontSize) ?? .systemFont(ofSize: defaultFontSize)
     }
     
@@ -334,7 +334,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                         return (font.contains(trait: .traitBold),font.contains(trait: .traitItalic), pointSize, offset)
                     }
                     pointSize = UIFont.preferredFont(forTextStyle: .body).pointSize
-                    print("Non UIFont in fontTraits default is \(pointSize)")
+                    print("Non UIFont in fontTraits default pointSize is \(pointSize)")
                     
                     // Fix font
                     DispatchQueue.main.async {
