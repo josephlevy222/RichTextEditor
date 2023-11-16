@@ -335,6 +335,9 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                     }
                     print("Non UIFont in fontTraits")
                     pointSize = UIFont.preferredFont(forTextStyle: .body).pointSize
+                    // Fix font
+                    var attributedString = NSMutableAttributedString(attributedString: textView.attributedText).uiFontAttributedString.nsAttributedString
+                    textView.attributedText = attributedString
                 }
                 return ( false, false, pointSize, offset)
             }()
