@@ -135,7 +135,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         toolbar.textView.isSelectable = true
         toolbar.textView.isScrollEnabled = false
         toolbar.textView.isUserInteractionEnabled = true
-        toolbar.textView.textAlignment = .left
+        toolbar.textView.textAlignment = .center
         
         toolbar.textView.textContainerInset = UIEdgeInsets.zero
         toolbar.textView.textContainer.lineFragmentPadding = 0
