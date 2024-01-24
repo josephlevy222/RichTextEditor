@@ -322,6 +322,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                         // pointSize is the fontSize that the toolbar ought to use unless justChanged
                         return (font.contains(trait: .traitBold),font.contains(trait: .traitItalic), pointSize, offset)
                     }
+					print("Non UIFont maybe Font, try to convert...")
 					// Try to convert Font to UIFont
 					if let font = attributes[.font] as? Font,
 					   let uiFont = resolveFont(font)?.font(with: nil) as? UIFont {
