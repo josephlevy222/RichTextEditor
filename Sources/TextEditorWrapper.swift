@@ -322,6 +322,13 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                         // pointSize is the fontSize that the toolbar ought to use unless justChanged
                         return (font.contains(trait: .traitBold),font.contains(trait: .traitItalic), pointSize, offset)
                     }
+					// Try to convert Font to UIFont
+					if let font = attributes[.font] as? Font,
+					   let uiFont = resolveFont(font)?.font(with: nil) as? UIFont {
+						pointSize = uiFont.pointSize / (offset == 0.0 ? 1.0 : 0.75)
+						// pointSize is the fontSize that the toolbar ought to use unless justChanged
+						return (uiFont.contains(trait: .traitBold),uiFont.contains(trait: .traitItalic), pointSize, offset)
+					}
                     pointSize = UIFont.preferredFont(forTextStyle: .body).pointSize
                     print("Non UIFont in fontTraits default pointSize is \(pointSize)")
                     
@@ -336,7 +343,8 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
                         let rangesAttributes = self.selectedRangeAttributes
                         for (range, attributes) in rangesAttributes {
                             font = attributes[.font] as? UIFont ?? defaultFont
-                            let weight = font.fontDescriptor.symbolicTraits.intersection(.traitBold) == .traitBold ? .bold : font.fontDescriptor.weight
+                            let weight = font.fontDescriptor.symbolicTraits.intersection(.traitBold) == .traitBold 
+								? .bold : font.fontDescriptor.weight
                             let size = font.fontDescriptor.pointSize
                             font = UIFont(descriptor: font.fontDescriptor, size: size).withWeight(weight)
                             mutableString.removeAttribute(.font, range: range)
