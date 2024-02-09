@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct KeyBoardToolBar  {
+public struct KeyBoardToolBar  {
     
     var textView: TextEditorWrapper.MyTextView
     var isBold: Bool = false
@@ -24,7 +24,7 @@ struct KeyBoardToolBar  {
     var justChanged: Bool = false
 }
 
-struct KeyBoardAddition: View {
+public struct KeyBoardAddition: View {
     @Binding var toolbar: KeyBoardToolBar
     
     private let buttonWidth: CGFloat = 32
@@ -51,7 +51,7 @@ struct KeyBoardAddition: View {
         toolbar.textView.selectedRange = selection
     }
     
-    var body: some View {
+    public var body: some View {
         VStack(spacing: 0) {
             HStack (spacing: 1) {
                 Group {

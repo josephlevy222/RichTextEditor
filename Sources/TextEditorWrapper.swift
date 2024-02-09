@@ -139,6 +139,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         
         toolbar.textView.textContainerInset = UIEdgeInsets.zero
         toolbar.textView.textContainer.lineFragmentPadding = 0
+		toolbar.textView.allowsEditingTextAttributes = true
         //toolbar.textView.layoutManager.allowsNonContiguousLayout = false
         toolbar.textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         toolbar.textView.backgroundColor = .clear
