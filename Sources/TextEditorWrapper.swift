@@ -34,7 +34,7 @@ public struct RichTextEditor: View {
             }
     }
 }
-
+public typealias AttributedStringEditor = RichTextEditor // for use of RichTextKit with this editor
 extension NSTextAlignment {
     var imageName: String {
         switch self {
@@ -50,7 +50,7 @@ extension NSTextAlignment {
 }
 
 @available(iOS 13.0, *)
-public struct TextEditorWrapper: UIViewControllerRepresentable {
+struct TextEditorWrapper: UIViewControllerRepresentable {
     @Binding var attributedText: AttributedString
     @Binding var undoManager: UndoManager?
     @Binding private var size: CGSize
