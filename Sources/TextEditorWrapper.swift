@@ -50,7 +50,7 @@ extension NSTextAlignment {
 }
 
 @available(iOS 13.0, *)
-struct TextEditorWrapper: UIViewControllerRepresentable {
+public struct TextEditorWrapper: UIViewControllerRepresentable {
     @Binding var attributedText: AttributedString
     @Binding var undoManager: UndoManager?
     @Binding private var size: CGSize
@@ -446,7 +446,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
         }
     }
     
-    class MyTextView: UITextView, ObservableObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    public class MyTextView: UITextView, ObservableObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
    
         // This works in iOS 16 but never called in 15 I believe
         open override func buildMenu(with builder: UIMenuBuilder) {

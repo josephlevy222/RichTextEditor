@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct KeyBoardToolBar  {
+struct KeyBoardToolBar  {
     
     var textView: TextEditorWrapper.MyTextView
     var isBold: Bool = false
