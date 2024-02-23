@@ -14,7 +14,7 @@ public struct RichTextEditor: View {
     @State var undoManager : UndoManager?
     private let placeholder: String
     private let onCommit: (NSAttributedString) -> Void
-    
+	let textView: UITextView
     public init(
         _ attributedText: Binding<AttributedString>,
         placeholder: String = "Type ...",
@@ -23,6 +23,7 @@ public struct RichTextEditor: View {
         _attributedText = attributedText
         self.placeholder = placeholder
         self.onCommit = onCommit
+		textView = UITextView()
     }
     
     public var body: some View {
@@ -447,8 +448,8 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
     }
     
     public class MyTextView: UITextView, ObservableObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-   
-        // This works in iOS 16 but never called in 15 I believe
+		
+		// This works in iOS 16 but never called in 15 I believe
         open override func buildMenu(with builder: UIMenuBuilder) {
             builder.remove(menu: .lookup) // Remove Lookup, Translate, Search Web
             //builder.remove(menu: .standardEdit) // Keep Cut, Copy, Paste
