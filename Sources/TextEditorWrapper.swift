@@ -438,7 +438,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
             if textView.attributedText.string != parent.placeholder {
                 self.parent.attributedText = textView.attributedText.uiFontAttributedString
             }
-            let size = CGSize(width: parent.controller.view.frame.width, height: .infinity)
+			let size = CGSize(width: parent.controller.view.frame.width, height: .greatestFiniteMagnitude)
             let estimatedSize = textView.sizeThatFits(size)
             if parent.size != estimatedSize {
                 DispatchQueue.main.async { self.parent.size = estimatedSize }
