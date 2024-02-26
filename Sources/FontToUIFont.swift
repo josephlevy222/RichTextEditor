@@ -45,6 +45,7 @@ extension AttributedString {
 	public var nsAttributedString : NSAttributedString { convertToUIAttributes() }
 	
 	public func convertToUIAttributes(traitCollection: UITraitCollection? = .current) -> NSMutableAttributedString {
+		debugPrint("traitCollection", traitCollection?.preferredContentSizeCategory)
 		let nsAttributedString = NSMutableAttributedString()
 		for run in runs {
 			// Get NSAttributes
@@ -286,9 +287,7 @@ protocol StaticFontModifier: FontModifier {
 protocol FontValueModifier: FontModifier {
 	init(value: Any)
 }
-extension FontValueModifier {
-	init(value: Any) { debugPrint("Unimplemented FontVauelModifieir"); self.init(value: value)}
-}
+
 ///Next, we can implement the “root” providers, System­Provider, Named­Provider, TextStyleProvider, and PlatformFontProvider:
 struct SystemProvider: FontProvider {
 	var size: CGFloat
@@ -448,7 +447,7 @@ struct MonospacedModifier: StaticFontModifier {
 }
 
 struct MonospacedDigitModifier: StaticFontModifier {
-	init() {} // timerLabel.font = UIFont.monospacedDigitSystemFont(ofSize: 72, weight: .regular)
+	init() {}
 	let modifier = FeatureSettingModifier(value: (kNumberSpacingType,kMonospacedNumbersSelector))
 	func modify(_ fontDescriptor: inout UIFontDescriptor) {
 		modifier.modify(&fontDescriptor)
@@ -460,7 +459,11 @@ struct MonospacedDigitModifier: StaticFontModifier {
 /// or font weight and create a parallel hierarchy of our own structs.
 func resolveFont(_ font: Font) -> FontProvider? {
 	let mirror = Mirror(reflecting: font)
-	guard let provider = mirror.descendant("provider", "base") else { return nil }
+	guard let provider = mirror.descendant("provider", "base") else { 
+		debugPrint("nil returned for font:", font)
+		dump(font) // use this dump to add another FontProvider
+		return nil
+	}
 	return resolveFontProvider(provider)
 }
 
@@ -532,12 +535,11 @@ func resolveFontProvider(_ provider: Any) -> FontProvider? {
 			  let value = mirror.descendant("modifier", "leading")  else { break }
 		return resolveFontProvider(base).map {base in ModifierProvider<LeadingModifier>(base: base, value: value) }
 		
-		// Not exhaustive, more providers may need to be handled here.
+		// May not be exhaustive, more providers may need to be handled here.
 	default: break
 	}
 	// Unhandled providerType
-	print("nil returned for provider:", providerType)
-	dump(provider)
-	// use this dump to add another FontProvider
+	debugPrint("nil returned for provider:", providerType)
+	dump(provider) // use this dump to add another FontProvider
 	return nil
 }
