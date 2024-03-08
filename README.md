@@ -18,13 +18,13 @@ A toolbar for iOS/iPadOS is attached to the keyboard using the UITextView's inpu
 		var body: some View {
 			VStack(alignment: .leading) {
 				Text(text)
-					Rectangle().frame(height: 5)
-				        HStack {
-					RichTextEditor($text)
-					Spacer()
+				Rectangle().frame(height: 5)
+					HStack {
+						RichTextEditor($text)
+						Spacer()
+					}
 				}
 			}
-		}
     	}
 
 	#Preview {
