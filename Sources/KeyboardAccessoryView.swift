@@ -7,9 +7,9 @@
 
 import SwiftUI
 
-struct KeyBoardToolBar  {
+public struct KeyboardToolBar  {
     
-    var textView: TextEditorWrapper.MyTextView
+    var textView: TextEditorWrapper.RichTextView
     var isBold: Bool = false
     var isItalic: Bool = false
     var isUnderline: Bool = false
@@ -17,85 +17,126 @@ struct KeyBoardToolBar  {
     var isSuperscript: Bool = false
     var isSubscript: Bool = false
     var fontSize: CGFloat = 17
-    var textAlignment: NSTextAlignment = .center
+	var textAlignment: NSTextAlignment = .left
     var color : Color = Color(uiColor: .label)
-    var background: Color = Color(uiColor: .systemBackground)
+    var background: Color = Color(uiColor: .clear)
     
     var justChanged: Bool = false
 }
 
-public struct KeyBoardAddition: View {
-    @Binding var toolbar: KeyBoardToolBar
+enum KeyboardCommand : Identifiable {
+	case bold,italic,underline,strikethrough,superscript,subscripts,modifyFontSize,alignText,insertImage,selectColor,
+		 selectBackground,dismissKeyboard
+	var id : String { String(describing: self)}
+}
+
+public struct KeyboardAccessoryView: View {
+	@Binding var toolbar: KeyboardToolBar
+	
+	private let buttonWidth: CGFloat = 32
+	private let buttonHeight: CGFloat = 32
+	private let cornerRadius: CGFloat = 6
+	private let edgeInsets = EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+	private let selectedColor = UIColor.separator
+	private let containerBackgroundColor: UIColor = .systemBackground
+	private let toolBarsBackground: UIColor = .systemGroupedBackground
+	private let colorConf = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular)
+	private var imageConf: UIImage.SymbolConfiguration {
+		UIImage.SymbolConfiguration(pointSize: min(buttonWidth, buttonHeight) * 0.7)
+	}
+	var attributes: [NSAttributedString.Key : Any] { toolbar.textView.typingAttributes }
+	
+	func roundedRectangle(_ highlight: Bool = false) -> some View {
+		RoundedRectangle(cornerRadius: cornerRadius).fill(Color(highlight ? selectedColor : .clear))
+			.frame(width: buttonWidth, height: buttonHeight)
+	}
+	
+	func updateAttributedText(with attributedText: NSAttributedString) {
+		let selection = toolbar.textView.selectedRange
+		toolbar.textView.updateAttributedText(with: attributedText)
+		toolbar.textView.selectedRange = selection
+	}
+	
+	func keyboardButtonView(_ button: KeyboardCommand) -> some View {
+		func symbol(_ name: String) -> Image { .init(systemName: name) }
+		func space(_ width: CGFloat) -> some View { Color.clear.frame(width: width)}
+		return HStack(spacing: 1) {
+			switch button {
+			case .bold:
+				Button(action: toggleBoldface) { symbol("bold") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isBold))
+			case .italic:
+				Button(action: toggleItalics) { symbol("italic") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isItalic))
+			case .underline:
+				Button(action: toggleUnderline) { symbol("underline") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isUnderline))
+			case .strikethrough:
+				Button(action: toggleStrikethrough) { symbol("strikethrough") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isStrikethrough))
+			case .superscript:
+				Button(action: toggleSuperscript) { symbol("textformat.superscript") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isSuperscript))
+			case .subscripts:
+				Button(action: toggleSubscript) { symbol("textformat.subscript") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle(toolbar.isSubscript))
+			case .modifyFontSize:
+				Divider()
+				space(4)
+				HStack(spacing: 4) {
+					Button(action: increaseFontSize) { symbol("plus.circle") }
+					Text(String(format: "%.1f", toolbar.fontSize)).font(.body)
+					Button(action: decreaseFontSize) { symbol("minus.circle") }
+				}
+				space(4)
+				Divider()
+			case .alignText:
+				Button(action: alignText) { symbol(toolbar.textAlignment.imageName)}
+			case .insertImage:
+				Button(action: insertImage) { symbol("photo.on.rectangle.angled") }
+					.frame(width: buttonWidth, height: buttonHeight)
+					.background(roundedRectangle())
+			case .selectColor:
+				space(10)
+				ColorPicker(selection: $toolbar.color, supportsOpacity: true) {
+					Button(action: selectColor) { symbol("character") } }
+				.fixedSize()
+			case .selectBackground:
+				space(10)
+				ColorPicker(selection: $toolbar.background, supportsOpacity: true) {
+					Button(action: selectBackground) { symbol("a.square") } }
+				.fixedSize()//.onChange(of: toolbar.background) {_ in  selectBackground() }
+			case .dismissKeyboard:
+				Button(action: {
+					toolbar.textView.resignFirstResponder()
+				}) { symbol("keyboard.chevron.compact.down")}
+					.padding(edgeInsets)
+			}
+			
+		}
+	}
+		
+	func keyboardButtons(_ buttons: [KeyboardCommand]) -> some View {
+		HStack(spacing: 1) {
+			ForEach(buttons) { keyboardButtonView($0) }
+		}
+	}
+	
+	let leadingButtons: [KeyboardCommand] = [.bold,.italic,.underline,.strikethrough,.superscript,.subscripts,.modifyFontSize,.selectColor,.selectBackground]
+	let trailingButtons: [KeyboardCommand] = [.dismissKeyboard]
     
-    private let buttonWidth: CGFloat = 32
-    private let buttonHeight: CGFloat = 32
-    private let cornerRadius: CGFloat = 6
-    private let edgeInsets = EdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-    private let selectedColor = UIColor.separator
-    private let containerBackgroundColor: UIColor = .systemBackground
-    private let toolBarsBackground: UIColor = .systemGroupedBackground
-    private let colorConf = UIImage.SymbolConfiguration(pointSize: 22, weight: .regular)
-    private var imageConf: UIImage.SymbolConfiguration {
-        UIImage.SymbolConfiguration(pointSize: min(buttonWidth, buttonHeight) * 0.7)
-    }
-    var attributes: [NSAttributedString.Key : Any] { toolbar.textView.typingAttributes }
-    
-    func roundedRectangle(_ highlight: Bool = false) -> some View {
-        RoundedRectangle(cornerRadius: cornerRadius).fill(Color(highlight ? selectedColor : .clear))
-            .frame(width: buttonWidth, height: buttonHeight)
-    }
-    
-    func updateAttributedText(with attributedText: NSAttributedString) {
-        let selection = toolbar.textView.selectedRange
-        toolbar.textView.updateAttributedText(with: attributedText)
-        toolbar.textView.selectedRange = selection
-    }
-    
-    public var body: some View {
-        VStack(spacing: 0) {
-            HStack (spacing: 1) {
-                Group {
-                    Button(action: toggleBoldface) { Image(systemName: "bold") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isBold))
-                    Button(action: toggleItalics) { Image(systemName: "italic") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isItalic))
-                    Button(action: toggleUnderline) { Image(systemName: "underline") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isUnderline))
-                    Button(action: toggleStrikethrough) { Image(systemName: "strikethrough") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isStrikethrough))
-                    Button(action: toggleSuperscript) { Image(systemName: "textformat.superscript") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isSuperscript))
-                    Button(action: toggleSubscript) { Image(systemName: "textformat.subscript") }
-                        .frame(width: buttonWidth, height: buttonHeight)
-                        .background(roundedRectangle(toolbar.isSubscript))
-                    Button(action: increaseFontSize) { Image(systemName: "plus.circle") }
-                        .padding(edgeInsets)
-                    Text(String(format: "%.1f", toolbar.fontSize)).font(.body)
-                    Button(action: decreaseFontSize) { Image(systemName: "minus.circle") }
-                        .padding(edgeInsets)
-                    Button(action: alignText) { Image(systemName: toolbar.textAlignment.imageName)}
-                }
-                Button(action: insertImage) { Image(systemName: "photo.on.rectangle.angled") }
-                    .frame(width: buttonWidth, height: buttonHeight)
-                    .background(roundedRectangle())
-                Spacer()
-                Button(action: {
-                    toolbar.textView.resignFirstResponder()
-                }) { Image(systemName: "keyboard.chevron.compact.down")}
-            }.font(.title2)
-            HStack {
-                ColorPicker(selection: $toolbar.color, supportsOpacity: true) { Button(" Foreground") { selectColor() } }
-                    .fixedSize()
-                ColorPicker(selection: $toolbar.background, supportsOpacity: true) { Button("Background") { selectBackground() } }
-                    .fixedSize()
-                Spacer()
-            }.padding(.vertical, 4)
-        }
+	public var body: some View {
+		HStack(spacing: 1) {
+			keyboardButtons(leadingButtons)
+			Spacer()
+			keyboardButtons(trailingButtons)
+		}
         .background(Color(toolBarsBackground))
     }
     
@@ -158,16 +199,16 @@ public struct KeyBoardAddition: View {
         }
         updateAttributedText(with: attributedString)
     }
-    
+
     func toggleBoldface() {
-        toggleSymbolicTrait(.traitBold)
+		toggleSymbolicTrait(.traitBold)
     }
     
     func toggleItalics() {
-        toggleSymbolicTrait(.traitItalic)
+		toggleSymbolicTrait(.traitItalic)
     }
     
-    private func toggleSymbolicTrait(_ trait: UIFontDescriptor.SymbolicTraits) {
+    private func toggleSymbolicTrait(_ trait: UIFontDescriptor.SymbolicTraits)  {
         if selectedRange.isEmpty { // toggle typingAttributes
             toolbar.justChanged = true
             let uiFont = toolbar.textView.typingAttributes[.font] as? UIFont
@@ -179,11 +220,10 @@ public struct KeyBoardAddition: View {
                 weight = trait != .traitBold ? weight : (isBold ? .regular : .bold)
                 if let fontDescriptor = isTrait ? descriptor.withSymbolicTraits(descriptor.symbolicTraits.subtracting(trait))
                     : descriptor.withSymbolicTraits(descriptor.symbolicTraits.union(trait)) {
-                    toolbar.textView.typingAttributes[.font] = UIFont(descriptor: fontDescriptor.withWeight(weight),
-                                                                      size: descriptor.pointSize)
+                    toolbar.textView.typingAttributes[.font] = UIFont(descriptor: fontDescriptor.withWeight(weight), size: descriptor.pointSize)
                 }
                 if let didChangeSelection = toolbar.textView.delegate?.textViewDidChangeSelection { didChangeSelection(toolbar.textView) }
-            }
+			} 
             
         } else {
             let attributedString = NSMutableAttributedString(attributedString: attributedText)
@@ -192,7 +232,8 @@ public struct KeyBoardAddition: View {
                                                 options: []) { (value, range, stopFlag) in
                 let uiFont = value as? UIFont
                 if let descriptor = uiFont?.fontDescriptor {
-                    isAll = isAll && descriptor.symbolicTraits.intersection(trait) == trait
+					let isTrait = (descriptor.symbolicTraits.intersection(trait) == trait)
+                    isAll = isAll && isTrait
                     if !isAll { stopFlag.pointee = true }
                 }
             }
@@ -231,29 +272,22 @@ public struct KeyBoardAddition: View {
         
         if selectedRange.isEmpty { // toggle typingAttributes
             var fontSize = toolbar.fontSize
-            let isScript = !(toolbar.textView.typingAttributes[.baselineOffset] as? CGFloat ?? 0.0 == 0.0)
-            if toolbar.isSubscript && toolbar.isSuperscript {
+            if toolbar.isSubscript && toolbar.isSuperscript { // Both on
                 // Turn one off
                 if sub { toolbar.isSuperscript = false } else { toolbar.isSubscript = false }
                 // Check that baseline is offset the right way
                 toolbar.textView.typingAttributes[.baselineOffset] = newOffset*toolbar.fontSize
-                // font is already right?
-                if !isScript { // baseline is zero but still script
-                    fontSize *= 0.75
-                    print("baseline not as expected, fontSize =",fontSize)
-                }
+                // font is already right
             }
             if !toolbar.isSubscript && !toolbar.isSuperscript {
                 // Both set off so adjust baseline and font
                 toolbar.textView.typingAttributes[.baselineOffset] = nil
                 // use toolbar.fontSize
-                print("baseline is set nil with fontSize =",fontSize)
-            } else {
-                // One is on
-                if isScript { print("baseline was expected to be nil")}
+                //print("baseline is set nil with fontSize =",fontSize)
+            } else {  // One is on
                 toolbar.textView.typingAttributes[.baselineOffset] = newOffset*toolbar.fontSize
                 fontSize *= 0.75
-                print("one is on with fontSize =",fontSize)
+                //print("one is on with fontSize =",fontSize)
             }
             var newFont : UIFont
             let descriptor: UIFontDescriptor
@@ -418,8 +452,8 @@ public struct KeyBoardAddition: View {
 }
 
 struct KeyBoardAddition_Previews: PreviewProvider {
-    @State static var toolbar: KeyBoardToolBar = .init(textView: TextEditorWrapper.MyTextView(), isUnderline: true)
+    @State static var toolbar: KeyboardToolBar = .init(textView: TextEditorWrapper.RichTextView(), isUnderline: true)
     static var previews: some View {
-        KeyBoardAddition(toolbar: .constant(toolbar))
+        KeyboardAccessoryView(toolbar: .constant(toolbar))
     }
 }
