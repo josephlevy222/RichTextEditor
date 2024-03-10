@@ -32,3 +32,7 @@ A toolbar for iOS/iPadOS is attached to the keyboard using the UITextView's inpu
 	}
 
 The toolbar still needs to be setup to work in macCatalyst and the macOS Fonts window will not set the backgroundColor of the  attributedText for unknown reasons.  
+
+## License
+
+RichTextKit is available under the MIT license. See the [LICENSE][License] file for more info.
