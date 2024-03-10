@@ -52,16 +52,15 @@ extension AttributedString {
             var nsAttributes = nsText.attributes(at: 0, effectiveRange: nil)
             let nsAttributedText = NSMutableAttributedString(AttributedString(self[run.range].characters))
             // Handle font  /// A property for accessing a font attribute.
-            if let font = run.font { // SwiftUI Font exists
-                if let uiFont = resolveFont(font)?.font(with: traitCollection) {
-                    nsAttributes[.font] = nil
-                    nsAttributes[.font] = uiFont // add font
-                }  else { // Already UIFont or default
-                    print("font not resolved",font)
-                    if nsAttributes[.font] == nil {
-                        nsAttributes[.font] = UIFont.preferredFont(forTextStyle: .body, compatibleWith: traitCollection)}
-                }
-            }
+			if let font = run.font { // SwiftUI Font exists
+				if let uiFont = resolveFont(font)?.font(with: traitCollection) {
+					nsAttributes[.font] = nil
+					nsAttributes[.font] = uiFont // add font
+				} //else { debugPrint("font not resolved",font) } // Already UIFont or no font
+			}
+			if nsAttributes[.font] == nil { //debugPrint("Default font used for no font")
+				nsAttributes[.font] = UIFont.preferredFont(forTextStyle: .body, compatibleWith: traitCollection)
+			}
             // Handle other SwiftUIAttributes
             /// strikethroughStyle /// A property for accessing a strikethrough style attribute.
             if let strikethroughStyle = run.strikethroughStyle {
