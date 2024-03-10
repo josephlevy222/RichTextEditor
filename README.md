@@ -35,4 +35,4 @@ The toolbar still needs to be setup to work in macCatalyst and the macOS Fonts w
 
 ## License
 
-RichTextKit is available under the MIT license. See the [LICENSE][License] file for more info.
+RichTextEditor is available under the MIT license. See the LICENSE file for more info.
