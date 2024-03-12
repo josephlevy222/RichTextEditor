@@ -46,12 +46,12 @@ extension AttributedString {
     
     public func convertToUIAttributes(traitCollection: UITraitCollection? = .current) -> NSMutableAttributedString {
         let nsAttributedString = NSMutableAttributedString()
-        for run in runs {
-            // Get NSAttributes
-            let nsText = NSAttributedString(AttributedString(self[run.range]))
-            var nsAttributes = nsText.attributes(at: 0, effectiveRange: nil)
-            let nsAttributedText = NSMutableAttributedString(AttributedString(self[run.range].characters))
-            // Handle font  /// A property for accessing a font attribute.
+		for run in runs {
+			// Get NSAttributes
+			let nsText = NSAttributedString(AttributedString(self[run.range]))
+			var nsAttributes = nsText.attributes(at: 0, effectiveRange: nil)
+			let nsAttributedText = NSMutableAttributedString(AttributedString(self[run.range].characters))
+			// Handle font  /// A property for accessing a font attribute.
 			if let font = run.font { // SwiftUI Font exists
 				if let uiFont = resolveFont(font)?.font(with: traitCollection) {
 					nsAttributes[.font] = nil
@@ -61,7 +61,7 @@ extension AttributedString {
 			if nsAttributes[.font] == nil { //debugPrint("Default font used for no font")
 				nsAttributes[.font] = UIFont.preferredFont(forTextStyle: .body, compatibleWith: traitCollection)
 			}
-            // Handle other SwiftUIAttributes
+			// Handle other SwiftUIAttributes
             /// strikethroughStyle /// A property for accessing a strikethrough style attribute.
             if let strikethroughStyle = run.strikethroughStyle {
                 if nsAttributes[.strikethroughStyle] == nil {

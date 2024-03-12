@@ -1,4 +1,4 @@
-//
+///
 //  TextEditorWrapper.swift
 //  TextView-Example
 //
@@ -28,8 +28,10 @@ public struct RichTextEditor: View {
 	@State var dynamicSize = CGSize(width: 1000, height: 100)
 	public var body: some View {
 		TextEditorWrapper(attributedText: $attributedText,undoManager: $undoManager, size: $dynamicSize, placeholder: placeholder, onCommit: onCommit)
-			.frame(minWidth: dynamicSize.width, idealWidth: dynamicSize.width, maxWidth: dynamicSize.width,
-				   minHeight: dynamicSize.height, idealHeight: dynamicSize.height, maxHeight: dynamicSize.height)
+		//			.frame(minWidth: dynamicSize.width, idealWidth: dynamicSize.width, maxWidth: dynamicSize.width,
+		//				   minHeight: dynamicSize.height, idealHeight: dynamicSize.height, maxHeight: dynamicSize.height)
+			.frame(idealWidth: dynamicSize.width, idealHeight: dynamicSize.height)
+			.fixedSize()
 			.onAppear {
 				attributedText = attributedText.nsAttributedString.uiFontAttributedString
 			}
@@ -51,13 +53,12 @@ extension NSTextAlignment {
 }
 
 @available(iOS 13.0, *)
-struct TextEditorWrapper: UIViewControllerRepresentable {
+struct TextEditorWrapper: UIViewRepresentable {
+	
 	@Binding var attributedText: AttributedString
 	@Binding var undoManager: UndoManager?
-	//@Binding private var size: CGSize
 	@Binding var dynamicSize : CGSize
-	internal var controller: UIViewController
-	private var accessoryViewController: UIHostingController<KeyboardAccessoryView>?
+	//private var accessoryViewController: UIHostingController<KeyboardAccessoryView>?
 	
 	private let placeholder: String
 	private let lineSpacing: CGFloat = 3
@@ -71,7 +72,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 		return UIFont(name: defaultFontName, size: defaultFontSize) ?? .systemFont(ofSize: defaultFontSize)
 	}
 	
-	@State var toolbar : KeyboardToolBar
+	@State var toolbar : KeyboardToolbar
 	var textView: RichTextView
 	// TODO: line width, line style
 	init(
@@ -84,18 +85,17 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 		_attributedText = attributedText
 		_undoManager = undoManager
 		self._dynamicSize = size
-		self.controller = UIViewController()
 		let newTextView = RichTextView()
 		self.textView = newTextView
 		self.placeholder = placeholder
 		self.onCommit = onCommit
-		self._toolbar = State(initialValue: KeyboardToolBar(textView: newTextView))
+		self._toolbar = State(initialValue: KeyboardToolbar(textView: newTextView))
 	}
 	
-	func makeUIViewController(context: Context) -> some UIViewController {
-		textView.delegate = context.coordinator
-		setUpTextView()
+	func makeUIView(context: Context) -> UITextView {
 		
+		setUpTextView()
+		textView.delegate = context.coordinator
 		let accessoryViewController = UIHostingController(rootView: textView.accessoryView)
 		DispatchQueue.main.async {
 			undoManager = self.textView.undoManager
@@ -104,20 +104,19 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 		textView.inputAccessoryView = {
 			let accessoryView = accessoryViewController.view
 			if let accessoryView {
-				let frameSize = CGRect(x: 0, y: 0, width: 100, height: 40)
+				let frameSize = CGRect(x: 0, y: 0, width: 100, height: 50)
 				accessoryView.frame = frameSize }
 			return accessoryView
 		}()
-		return controller
+		return textView
 	}
 	
-	func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {
-		let selected = context.coordinator.parent.textView.selectedRange
+	func updateUIView(_ uiView: UITextView, context: Context) {
 		let newText = attributedText.convertToUIAttributes()
-		context.coordinator.parent.textView.attributedText =  newText
-		context.coordinator.parent.textView.selectedRange = selected
-		// apparently the context is assigned to the "state" after this,
-		// so without changing the context nothing happens
+		let selected = uiView.selectedRange
+		uiView.attributedText = newText
+		uiView.selectedRange = selected
+		uiView.textAlignment = toolbar.textAlignment // Needed here to bring in alignment
 	}
 	
 	func makeCoordinator() -> Coordinator {
@@ -136,24 +135,16 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 		textView.isSelectable = true
 		textView.isScrollEnabled = false
 		textView.isUserInteractionEnabled = true
-		textView.textAlignment = .center
 		
 		textView.textContainerInset = UIEdgeInsets.zero
 		textView.textContainer.lineFragmentPadding = 0
 		textView.allowsEditingTextAttributes = true
-		//textView.layoutManager.allowsNonContiguousLayout = false
+		
 		textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 		textView.backgroundColor = .clear
 		textView.textColor = .label
 		textView.accessoryView = KeyboardAccessoryView(toolbar: $toolbar)
-		controller.view.addSubview(textView)
-		textView.translatesAutoresizingMaskIntoConstraints = false
-		[
-			//textView.centerXAnchor.constraint(equalTo: controller.view.centerXAnchor),
-			//textView.centerYAnchor.constraint(equalTo: controller.view.centerYAnchor),
-			textView.widthAnchor.constraint(equalTo: controller.view.widthAnchor),
-			textView.heightAnchor.constraint(equalTo: controller.view.heightAnchor)
-		].forEach { $0.isActive = true }
+		textView.textAlignment = .center
 	}
 	
 	private func scaleImage(image: UIImage, maxWidth: CGFloat, maxHeight: CGFloat) -> UIImage {
@@ -169,11 +160,11 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 	
 	class Coordinator: NSObject, UITextViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate, UIColorPickerViewControllerDelegate {
 		var parent: TextEditorWrapper
-		var fontName: String
+		//var fontName: String
 		
 		init(_ parent: TextEditorWrapper) {
 			self.parent = parent
-			self.fontName = parent.defaultFontName
+			//self.fontName = parent.defaultFontName
 		}
 		
 		// MARK: - Image Picker
@@ -226,7 +217,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 			let attributes = parent.textView.selectedRange.isEmpty ? parent.textView.typingAttributes : selectedAttributes
 			let fontSize = getFontSize(attributes: attributes)
 			
-			fontName = name
+			let fontName = name
 			let defaultFont = UIFont.preferredFont(forTextStyle: .body)
 			let newFont = UIFont(name: fontName, size: fontSize) ?? defaultFont
 			textEffect(range: parent.textView.selectedRange, key: .font, value: newFont, defaultValue: defaultFont)
@@ -246,7 +237,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 			imagePicker.delegate = self
 			imagePicker.allowsEditing = true
 			imagePicker.sourceType = sourceType
-			parent.controller.present(imagePicker, animated: true, completion: nil)
+			parent.textView.parentViewController?.present(imagePicker, animated: true, completion: nil)
 		}
 		
 		func insertLine(name: String) {
@@ -410,6 +401,7 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 				parent.toolbar.color = Color(uiColor: color)
 				parent.toolbar.background = Color(uiColor: background)
 				parent.toolbar.justChanged = false
+				parent.toolbar.textAlignment = textView.textAlignment
 			}
 		}
 		
@@ -442,28 +434,20 @@ struct TextEditorWrapper: UIViewControllerRepresentable {
 				self.parent.attributedText = textView.attributedText.uiFontAttributedString
 			}
 			let size = CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
+		    textView.textAlignment = .left // always estimate with .left  Otherwise, it does not work!
 			let estimatedSize = textView.sizeThatFits(size)
-			if parent.dynamicSize != estimatedSize {
-				DispatchQueue.main.async {
-					self.parent.dynamicSize = estimatedSize
-					textView.constraints.forEach { (constraint) in
-						if constraint.firstAttribute == .height {
-							constraint.constant = estimatedSize.height
-						}
-						if constraint.firstAttribute == .width {
-							constraint.constant = estimatedSize.width
-						}
-					}
-				}
-			}
-			textView.scrollRangeToVisible(textView.selectedRange)
+			textView.textAlignment = parent.toolbar.textAlignment
+			if parent.dynamicSize != estimatedSize { self.parent.dynamicSize = estimatedSize }
 			textViewDidChangeSelection(textView)
 		}
 	}
-	// MARK: MyTextView
+}
+
+extension TextEditorWrapper {
+	// MARK: RichTextView
 	public class RichTextView: UITextView, ObservableObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
 		public var accessoryView: KeyboardAccessoryView?
-
+		
 		// This works in iOS 16 but never called in 15 I believe
 		open override func buildMenu(with builder: UIMenuBuilder) {
 			builder.remove(menu: .lookup) // Remove Lookup, Translate, Search Web

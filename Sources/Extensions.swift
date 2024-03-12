@@ -119,3 +119,12 @@ extension UIColor {
         return luminance
     }
 }
+
+// Hack to use UIViewRepresentable instead of UIViewControllerRepresentable for TextEditorWrapper
+extension UIView {
+	var parentViewController: UIViewController? {
+		sequence(first: self) { $0.next }
+			.compactMap{ $0 as? UIViewController }
+			.first
+	}
+}

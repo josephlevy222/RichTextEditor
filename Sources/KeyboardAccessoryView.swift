@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-public struct KeyboardToolBar  {
+public struct KeyboardToolbar  {
     
     var textView: TextEditorWrapper.RichTextView
     var isBold: Bool = false
@@ -17,7 +17,7 @@ public struct KeyboardToolBar  {
     var isSuperscript: Bool = false
     var isSubscript: Bool = false
     var fontSize: CGFloat = 17
-	var textAlignment: NSTextAlignment = .left
+	var textAlignment: NSTextAlignment = .center
     var color : Color = Color(uiColor: .label)
     var background: Color = Color(uiColor: .clear)
     
@@ -31,8 +31,8 @@ enum KeyboardCommand : Identifiable {
 }
 
 public struct KeyboardAccessoryView: View {
-	@Binding var toolbar: KeyboardToolBar
-	
+	@Binding var toolbar: KeyboardToolbar
+	let inputClick = InputClickPlayer()
 	private let buttonWidth: CGFloat = 32
 	private let buttonHeight: CGFloat = 32
 	private let cornerRadius: CGFloat = 6
@@ -103,15 +103,17 @@ public struct KeyboardAccessoryView: View {
 					.frame(width: buttonWidth, height: buttonHeight)
 					.background(roundedRectangle())
 			case .selectColor:
-				space(10)
+				space(5)
 				ColorPicker(selection: $toolbar.color, supportsOpacity: true) {
 					Button(action: selectColor) { symbol("character") } }
 				.fixedSize()
+				space(5)
 			case .selectBackground:
-				space(10)
+				space(5)
 				ColorPicker(selection: $toolbar.background, supportsOpacity: true) {
 					Button(action: selectBackground) { symbol("a.square") } }
-				.fixedSize()//.onChange(of: toolbar.background) {_ in  selectBackground() }
+				.fixedSize()
+				space(5)
 			case .dismissKeyboard:
 				Button(action: {
 					toolbar.textView.resignFirstResponder()
@@ -128,7 +130,7 @@ public struct KeyboardAccessoryView: View {
 		}
 	}
 	
-	let leadingButtons: [KeyboardCommand] = [.bold,.italic,.underline,.strikethrough,.superscript,.subscripts,.modifyFontSize,.selectColor,.selectBackground]
+	let leadingButtons: [KeyboardCommand] = [.bold,.italic,.underline,.strikethrough,.superscript,.subscripts,.modifyFontSize,.selectColor,.selectBackground,.alignText]
 	let trailingButtons: [KeyboardCommand] = [.dismissKeyboard]
     
 	public var body: some View {
@@ -144,6 +146,7 @@ public struct KeyboardAccessoryView: View {
     var selectedRange: NSRange { toolbar.textView.selectedRange }
     
     func toggleStrikethrough() {
+		inputClick.play()
         let attributedString = NSMutableAttributedString(attributedString: attributedText)
         if selectedRange.isEmpty {
             toolbar.isStrikethrough.toggle()
@@ -171,6 +174,7 @@ public struct KeyboardAccessoryView: View {
     }
     
     func toggleUnderline() {
+		inputClick.play()
         let attributedString = NSMutableAttributedString(attributedString: attributedText)
         if selectedRange.isEmpty {
             toolbar.isUnderline.toggle()
@@ -209,6 +213,7 @@ public struct KeyboardAccessoryView: View {
     }
     
     private func toggleSymbolicTrait(_ trait: UIFontDescriptor.SymbolicTraits)  {
+		inputClick.play()
         if selectedRange.isEmpty { // toggle typingAttributes
             toolbar.justChanged = true
             let uiFont = toolbar.textView.typingAttributes[.font] as? UIFont
@@ -266,6 +271,7 @@ public struct KeyboardAccessoryView: View {
     }
     
     private func toggleScript(sub: Bool = false) {
+		inputClick.play()
         let selectedRange = toolbar.textView.selectedRange
         let newOffset = sub ? -0.3 : 0.4
         let attributedString = NSMutableAttributedString(attributedString: attributedText)
@@ -293,10 +299,13 @@ public struct KeyboardAccessoryView: View {
             let descriptor: UIFontDescriptor
             if let font = toolbar.textView.typingAttributes[.font] as? UIFont {
                 descriptor = font.fontDescriptor
+				let traits = descriptor.symbolicTraits.union(.traitTightLeading)
+				
                 newFont = UIFont(descriptor: descriptor, size: fontSize)
                 if descriptor.symbolicTraits.intersection(.traitItalic) == .traitItalic, let font = newFont.italic() {
                     newFont = font
                 }
+				
             } else { newFont = UIFont.preferredFont(forTextStyle: .body) }
             toolbar.textView.typingAttributes[.font] =  newFont
             toolbar.justChanged = true
@@ -334,7 +343,7 @@ public struct KeyboardAccessoryView: View {
                 let descriptor: UIFontDescriptor
                 if let font = attributes[.font] as? UIFont {
                     let isBold = font.contains(trait: .traitBold)
-                    descriptor = font.fontDescriptor
+					descriptor = font.fontDescriptor.withSymbolicTraits(font.fontDescriptor.symbolicTraits.union(.traitTightLeading)) ?? font.fontDescriptor
                     attributedString.addAttribute(.baselineOffset, value: newOffset*descriptor.pointSize,
                                                   range: range)
                     newFont = UIFont(descriptor: descriptor, size: 0.75*descriptor.pointSize)
@@ -350,17 +359,15 @@ public struct KeyboardAccessoryView: View {
     
     
     private func alignText() {
-        var textAlignment: NSTextAlignment
-        switch toolbar.textAlignment {
-        case .left: textAlignment = .center
-        case .center: textAlignment = .right
-        case .right: textAlignment = .left
-        case .justified: textAlignment = .justified
-        case .natural: textAlignment = .center
-        @unknown default: textAlignment = .left
-        }
-        toolbar.textAlignment = textAlignment
-        toolbar.textView.textAlignment = textAlignment
+		inputClick.play()
+		toolbar.textAlignment = switch toolbar.textAlignment {
+			case .left: .center
+			case .center: .right
+			case .right:  .left
+			case .justified: .justified
+			case .natural: .center
+			@unknown default: .left
+		}
         if let update = toolbar.textView.delegate?.textViewDidChange {
             update(toolbar.textView)
         }
@@ -368,6 +375,7 @@ public struct KeyboardAccessoryView: View {
     
     /// Add text attribute to text view
     private func textEffect<T: Equatable>(range: NSRange, key: NSAttributedString.Key, value: T, defaultValue: T) {
+		inputClick.play()
         if !range.isEmpty {
             let mutableString = NSMutableAttributedString(attributedString: toolbar.textView.attributedText)
             mutableString.removeAttribute(key, range: range)
@@ -385,6 +393,7 @@ public struct KeyboardAccessoryView: View {
     }
     
     private func adjustFontSize(isIncrease: Bool) {
+		inputClick.play()
         let textRange = toolbar.textView.selectedRange
         var selectedRangeAttributes: [(NSRange, [NSAttributedString.Key : Any])] {
             var textAttributes: [(NSRange, [NSAttributedString.Key : Any])] = []
@@ -434,6 +443,7 @@ public struct KeyboardAccessoryView: View {
     }
     
     func insertImage() {
+		inputClick.play()
         let delegate = toolbar.textView.delegate as? TextEditorWrapper.Coordinator
         if let delegate { delegate.insertImage() }
     }
@@ -445,15 +455,32 @@ public struct KeyboardAccessoryView: View {
     }
     
     private func selectBackground() {
+		
         let color = UIColor(toolbar.background)
         textEffect(range: toolbar.textView.selectedRange, key: .backgroundColor, value: color, defaultValue: color)
     }
-
 }
 
 struct KeyBoardAddition_Previews: PreviewProvider {
-    @State static var toolbar: KeyboardToolBar = .init(textView: TextEditorWrapper.RichTextView(), isUnderline: true)
+    @State static var toolbar: KeyboardToolbar = .init(textView: TextEditorWrapper.RichTextView(), isUnderline: true)
     static var previews: some View {
         KeyboardAccessoryView(toolbar: .constant(toolbar))
     }
 }
+
+import AVFoundation
+public class InputClickPlayer {
+	private var soundID: SystemSoundID
+	init() {
+		soundID = 0
+		if let filePath = Bundle.main.path(forResource: "sound56", ofType: "wav") {
+			let fileURL = URL(fileURLWithPath: filePath)
+			AudioServicesCreateSystemSoundID(fileURL as CFURL, &soundID)
+		} else { debugPrint("Error getting button click file sound56.wav") }
+	}
+	
+	public func play() { AudioServicesPlaySystemSound(soundID) }
+}
+
+
+
