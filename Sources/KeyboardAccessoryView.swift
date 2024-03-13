@@ -473,7 +473,7 @@ public class InputClickPlayer {
 	private var soundID: SystemSoundID
 	init() {
 		soundID = 0
-		if let filePath = Bundle.main.path(forResource: "sound56", ofType: "wav") {
+		if let filePath = Bundle.module.path(forResource: "sound56", ofType: "wav") {
 			let fileURL = URL(fileURLWithPath: filePath)
 			AudioServicesCreateSystemSoundID(fileURL as CFURL, &soundID)
 		} else { debugPrint("Error getting button click file sound56.wav") }
