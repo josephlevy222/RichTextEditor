@@ -95,6 +95,7 @@ struct TextEditorWrapper: UIViewRepresentable {
 	func makeUIView(context: Context) -> UITextView {
 		
 		setUpTextView()
+		textView.isScrollEnabled = false
 		textView.delegate = context.coordinator
 		let accessoryViewController = UIHostingController(rootView: textView.accessoryView)
 		DispatchQueue.main.async {
@@ -116,7 +117,15 @@ struct TextEditorWrapper: UIViewRepresentable {
 		let selected = uiView.selectedRange
 		uiView.attributedText = newText
 		uiView.selectedRange = selected
+		let size = CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
+		uiView.textAlignment = .left // needed for estimatedSize to work right for some reason
+		let estimatedSize = uiView.sizeThatFits(size)
+		// debugPrint("estimatedSize:",estimatedSize)
 		uiView.textAlignment = toolbar.textAlignment // Needed here to bring in alignment
+		uiView.frame.size = CGSize(width: estimatedSize.width, height: estimatedSize.height)
+		if dynamicSize != estimatedSize {
+			DispatchQueue.main.async { dynamicSize = estimatedSize }
+		}
 	}
 	
 	func makeCoordinator() -> Coordinator {
@@ -433,11 +442,7 @@ struct TextEditorWrapper: UIViewRepresentable {
 			if textView.attributedText.string != parent.placeholder {
 				self.parent.attributedText = textView.attributedText.uiFontAttributedString
 			}
-			let size = CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
-		    textView.textAlignment = .left // always estimate with .left  Otherwise, it does not work!
-			let estimatedSize = textView.sizeThatFits(size)
-			textView.textAlignment = parent.toolbar.textAlignment
-			if parent.dynamicSize != estimatedSize { self.parent.dynamicSize = estimatedSize }
+			
 			textViewDidChangeSelection(textView)
 		}
 	}

@@ -299,7 +299,7 @@ public struct KeyboardAccessoryView: View {
             let descriptor: UIFontDescriptor
             if let font = toolbar.textView.typingAttributes[.font] as? UIFont {
                 descriptor = font.fontDescriptor
-				let traits = descriptor.symbolicTraits.union(.traitTightLeading)
+				//let traits = descriptor.symbolicTraits.union(.traitTightLeading)
 				
                 newFont = UIFont(descriptor: descriptor, size: fontSize)
                 if descriptor.symbolicTraits.intersection(.traitItalic) == .traitItalic, let font = newFont.italic() {
